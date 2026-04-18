@@ -1,0 +1,19 @@
+# Large checkpoint files (268MB each — too big for GitHub)
+*.pth
+*.pt
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Large zip files
+*.zip
+outputs/checkpoints/
+
+# Data folder (too large for GitHub)
+data/
+files/
+# macOS hidden files
+.DS_Store
