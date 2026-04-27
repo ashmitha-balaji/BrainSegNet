@@ -1,41 +1,54 @@
 """
 config.py  —  Central Path Configuration for BrainSegNet
 =========================================================
-THIS IS THE ONLY FILE YOU NEED TO EDIT IF PATHS CHANGE.
+Paths default to the repo workspace (parent folder of `dl_project_new`):
 
-Current setup (SJSU Docker Lab — Ashmitha's machine):
-  Windows path : C:\\Users\\ashmitha\\Desktop\\ashmitha\\
-  Docker mounts: C:\\Users\\ashmitha\\Desktop\\ashmitha  →  /app
-  Inside Docker: everything is accessible under /app/
+  <workspace>/data/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData/  ← DATA_ROOT
+  <workspace>/outputs/                                                     ← OUTPUT_DIR
 
-Data folder structure expected:
-  /app/data/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData/
-      BraTS20_Training_001/
-          BraTS20_Training_001_t1.nii
-          BraTS20_Training_001_t1ce.nii
-          BraTS20_Training_001_t2.nii
-          BraTS20_Training_001_flair.nii
-          BraTS20_Training_001_seg.nii
-      BraTS20_Training_002/
+Docker examples (paths follow wherever `dl_project_new/config.py` lives):
+
+  Mount parent folder (your setup):
+    -v "C:\\Users\\arpana\\Desktop\\Arpana":/app
+  Repo at /app/BrainSegNet/dl_project_new/ → WORKSPACE_ROOT=/app/BrainSegNet
+  → DATA_ROOT=/app/BrainSegNet/data/.../MICCAI_BraTS2020_TrainingData
+
+  Mount repo root instead:
+    -v "C:\\Users\\...\\BrainSegNet":/app
+  Repo at /app/dl_project_new/ → WORKSPACE_ROOT=/app
+
+Override without editing this file (optional):
+
+  export BRAINSENET_DATA_ROOT=/path/to/MICCAI_BraTS2020_TrainingData
+  export BRAINSENET_OUTPUT_DIR=/path/to/outputs
+
+Expected patient folder (example):
+
+  BraTS20_Training_001/
+      BraTS20_Training_001_t1.nii
+      BraTS20_Training_001_t1ce.nii
       ...
-
-Docker run command used:
-  docker run --gpus all -p 8888:8888
-    -v "C:\\Users\\ashmitha\\Desktop\\ashmitha":/app
-    <IMAGE_NAME>:<TAG>
 """
 
 import os
 
 # ============================================================
-# PRIMARY PATHS — change these if the machine or data path changes
+# Resolve workspace root = parent of this package (dl_project_new)
 # ============================================================
 
-# Root of the BraTS 2020 training data (inside Docker container)
-DATA_ROOT = "/app/data/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData"
+_PKG_DIR = os.path.dirname(os.path.abspath(__file__))
+WORKSPACE_ROOT = os.path.dirname(_PKG_DIR)
 
-# Where checkpoints, logs, and results are saved (inside Docker container)
-OUTPUT_DIR = "/app/outputs"
+_DEFAULT_DATA = os.path.join(
+    WORKSPACE_ROOT,
+    "data",
+    "BraTS2020_TrainingData",
+    "MICCAI_BraTS2020_TrainingData",
+)
+_DEFAULT_OUTPUT = os.path.join(WORKSPACE_ROOT, "outputs")
+
+DATA_ROOT = os.environ.get("BRAINSENET_DATA_ROOT", _DEFAULT_DATA)
+OUTPUT_DIR = os.environ.get("BRAINSENET_OUTPUT_DIR", _DEFAULT_OUTPUT)
 
 # ============================================================
 # TRAINING HYPERPARAMETERS — safe defaults for the lab GPU

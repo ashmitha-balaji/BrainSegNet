@@ -205,36 +205,74 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 pip install nibabel scipy einops matplotlib pandas scikit-learn tqdm -q
 ```
 
-### 3. Set Your Data Path
+### 3. Workspace folder layout
 
-Open `config.py` and change **one line**:
+Place the repo, BraTS data, and run outputs in a single workspace (example: `Desktop/Arpana/BrainSegNet`). Training code in `dl_project_new/config.py` resolves paths from the **parent of `dl_project_new`** by default.
+
+```
+BrainSegNet/                          ← workspace root (repo root)
+├── README.md
+├── LICENSE
+├── .gitignore
+├── data/
+│   ├── BraTS2020_TrainingData/
+│   │   └── MICCAI_BraTS2020_TrainingData/   ← patient folders (BraTS20_Training_xxx)
+│   └── BraTS2020_ValidationData/            ← optional; not required by default config
+├── dl_project_new/                     ← notebooks, config.py, train.py, models/, …
+│   ├── config.py
+│   ├── BrainSegNet_Full_Pipeline.ipynb
+│   ├── QuickStart_Verification.ipynb
+│   ├── train.py
+│   ├── evaluate.py
+│   └── …
+└── outputs/                            ← created automatically; checkpoints & artifacts
+    ├── checkpoints/
+    │   ├── teacher_best.pth
+    │   └── student_best.pth
+    ├── logs/
+    ├── teacher_history.json
+    ├── student_history.json
+    ├── eval_results.json
+    ├── training_curves.png
+    ├── patient_vis.png
+    └── predictions.png
+```
+
+Override paths with environment variables if your layout differs: `BRAINSENET_DATA_ROOT`, `BRAINSENET_OUTPUT_DIR` (see `dl_project_new/config.py`).
+
+### 4. Set your paths
+
+Open `dl_project_new/config.py`. By default, **data** and **outputs** live under the workspace root as in the tree above. You only need to edit paths if your BraTS tree is elsewhere; you can also set `BRAINSENET_DATA_ROOT` / `BRAINSENET_OUTPUT_DIR` instead of editing the file.
+
+Legacy one-line example (only if you point `DATA_ROOT` manually):
 
 ```python
-# Change this to your local BraTS 2020 data path
 DATA_ROOT = "/your/path/to/MICCAI_BraTS2020_TrainingData"
 ```
 
-Everything else in `config.py` is already configured.
-
-### 4. Run Verification First (Always)
+### 5. Run verification first (always)
 
 ```bash
+cd dl_project_new
 jupyter notebook QuickStart_Verification.ipynb
 ```
 
 This runs a 5-patient / 3-epoch mini test to confirm everything works before committing to full training (~15 minutes).
 
-### 5. Full Training via Notebook
+### 6. Full training via notebook
 
 ```bash
+cd dl_project_new
 jupyter notebook BrainSegNet_Full_Pipeline.ipynb
 ```
 
-Open `config.py` and set `TEST_MODE = False`, then run all sections.
+Open `dl_project_new/config.py` and set `TEST_MODE = False`, then run all sections.
 
-### 5. Or Train via Command Line
+### 7. Or train via command line
 
 ```bash
+cd dl_project_new
+
 # Stage 1: Teacher (~12 hours on RTX 4090)
 python train.py --mode teacher
 

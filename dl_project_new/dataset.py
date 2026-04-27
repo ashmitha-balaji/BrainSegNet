@@ -9,10 +9,10 @@ PATHS CHANGED FROM ORIGINAL:
   - No hardcoded paths in this file
   - config.py is the single source of truth for DATA_ROOT
 
-Docker path mapping:
-  Windows:  C:\\Users\\ashmitha\\Desktop\\ashmitha\\data\\BraTS2020_TrainingData\\...
-  Docker:   /app/data/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData
-  (set in config.py as DATA_ROOT)
+Paths (see config.py):
+  WORKSPACE_ROOT = parent of dl_project_new (repo root), e.g. .../BrainSegNet or /app/BrainSegNet
+  DATA_ROOT        = WORKSPACE_ROOT/data/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData
+                     (or BRAINSENET_DATA_ROOT if set)
 """
 
 import os
@@ -42,7 +42,7 @@ def _load_nii(path_stem: str) -> np.ndarray:
             return nib.load(p).get_fdata(dtype=np.float32)
     raise FileNotFoundError(
         f"Cannot find {path_stem}.nii or {path_stem}.nii.gz\n"
-        f"Check DATA_ROOT in config.py: {DATA_ROOT}"
+        f"Check DATA_ROOT / BRAINSENET_DATA_ROOT: {DATA_ROOT}"
     )
 
 
@@ -116,7 +116,7 @@ def find_valid_patients(data_root: str = None) -> List[str]:
     valid = []
     if not os.path.isdir(root):
         print(f"ERROR: DATA_ROOT not found: {root}")
-        print("Check config.py — DATA_ROOT must match your Docker mount path.")
+        print("Use <repo>/data/.../MICCAI_BraTS2020_TrainingData or set BRAINSENET_DATA_ROOT.")
         return valid
     for pid in sorted(os.listdir(root)):
         pdir = os.path.join(root, pid)
@@ -148,8 +148,8 @@ class BraTS2020Dataset(Dataset):
     """
     BraTS 2020 3-D dataset with missing-modality simulation.
 
-    num_workers MUST be 0 when running inside Docker on Windows.
-    This is set automatically from config.py (NUM_WORKERS = 0).
+    DataLoader worker count comes from config.py (NUM_WORKERS).
+    Use 0 inside Docker on Windows to avoid multiprocessing issues.
     """
 
     def __init__(self, patient_ids, data_root=None, crop_size=None,
@@ -201,8 +201,7 @@ def get_dataloaders(data_root=None, batch_size=None, num_workers=None,
     """
     Create train/val/test DataLoaders.
 
-    All parameters default to values in config.py.
-    num_workers is forced to 0 inside Docker on Windows.
+    All parameters default to values in config.py (including NUM_WORKERS).
     """
     root    = data_root         or DATA_ROOT
     bs      = batch_size        or BATCH_SIZE
